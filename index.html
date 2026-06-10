@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Runner – Nauka Programowania</title>
+  <style>
+    /* ============================================================
+       RESET & ZMIENNE CSS
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f0f1a;
+      --panel:     #1a1a2e;
+      --border:    #2a2a4a;
+      --cyan:      #00d4ff;
+      --green:     #2ed573;
+      --red:       #ff4757;
+      --orange:    #ffa502;
+      --purple:    #a29bfe;
+      --text:      #e0e0f0;
+      --muted:     #6c6c9a;
+      --font:      'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      user-select: none;
+    }
+
+    /* ============================================================
+       NAGŁÓWEK
+       ============================================================ */
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--cyan);
+      letter-spacing: 2px;
+    }
+
+    .logo span { color: var(--green); }
+
+    .tagline {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ============================================================
+       HUD – INTERFEJS UŻYTKOWNIKA
+       ============================================================ */
+    #hud {
+      width: 100%;
+      max-width: 900px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 16px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hud-label {
+      color: var(--muted);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-value {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    #hud-score   .hud-value { color: var(--cyan); }
+    #hud-lives   .hud-value { color: var(--red); }
+    #hud-level   .hud-value { color: var(--green); }
+    #hud-concept .hud-value { color: var(--purple); font-size: 0.75rem; }
+    #hud-combo   .hud-value { color: var(--orange); }
+
+    /* pasek postępu do następnego poziomu */
+    #progress-bar-wrap {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 140px;
+    }
+
+    #progress-bar-bg {
+      background: var(--border);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    #progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      border-radius: 4px;
+      transition: width 0.2s;
+      width: 0%;
+    }
+
+    /* ============================================================
+       CANVAS – SCENA GRY
+       ============================================================ */
+    #canvas-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: none;
+    }
+
+    /* ============================================================
+       EKRANY NAKŁADKOWE (start / pauza / koniec gry)
+       ============================================================ */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 25, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay h2 {
+      font-size: 1.8rem;
+      color: var(--cyan);
+      letter-spacing: 3px;
+    }
+
+    .overlay p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    .overlay .score-big {
+      font-size: 2.5rem;
+      color: var(--green);
+    }
+
+    /* =
