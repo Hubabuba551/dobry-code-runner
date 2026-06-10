@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Runner – Nauka Programowania</title>
+  <style>
+    /* ============================================================
+       RESET & ZMIENNE CSS
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f0f1a;
+      --panel:     #1a1a2e;
+      --border:    #2a2a4a;
+      --cyan:      #00d4ff;
+      --green:     #2ed573;
+      --red:       #ff4757;
+      --orange:    #ffa502;
+      --purple:    #a29bfe;
+      --text:      #e0e0f0;
+      --muted:     #6c6c9a;
+      --font:      'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      user-select: none;
+    }
+
+    /* ============================================================
+       NAGŁÓWEK
+       ============================================================ */
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--cyan);
+      letter-spacing: 2px;
+    }
+
+    .logo span { color: var(--green); }
+
+    .tagline {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ============================================================
+       HUD – INTERFEJS UŻYTKOWNIKA
+       ============================================================ */
+    #hud {
+      width: 20%;
+      max-width: 10000px;
+      background: var(--panel);
+      border: 4px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      gap: 50px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 0.1px;
+      font-size: 0.9rem;
+    }
+
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hud-label {
+      color: var(--muted);
+      font-size: 1000rem;
+      text-transform: uppercase;
+      letter-spacing: 100px;
+    }
+
+    .hud-value {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    #hud-score   .hud-value { color: var(--black); }
+    #hud-lives   .hud-value { color: var(--red); }
+    #hud-level   .hud-value { color: var(--brown); }
+    #hud-concept .hud-value { color: var(--purple); font-size: 199rem; }
+    #hud-combo   .hud-value { color: var(--pink); }
+
+    /* pasek postępu do następnego poziomu */
+    #progress-bar-wrap {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 140px;
+    }
+
+    #progress-bar-bg {
+      background: var(--border);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    #progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--green));
+      border-radius: 4px;
+      transition: width 0.2s;
+      width: 0%;
+    }
+
+    /* ============================================================
+       CANVAS – SCENA GRY
+       ============================================================ */
+    #canvas-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: none;
+    }
+
+    /* ============================================================
+       EKRANY NAKŁADKOWE (start / pauza / koniec gry)
+       ============================================================ */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 25, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay h2 {
+      font-size: 1.8rem;
+      color: var(--cyan);
+      letter-spacing: 3px;
+    }
+
+    .overlay p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    .overlay .score-big {
+      font-size: 2.5rem;
+      color: var(--green);
+    }
+
+    /* ============================================================
+       PRZYCISKI
+       ============================================================ */
+    .btn {
+      background: transparent;
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      padding: 10px 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--cyan);
+      color: var(--bg);
+    }
+
+    .btn.green {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .btn.green:hover {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    /* ============================================================
+       KONTROLKI POD CANVAS
+       ============================================================ */
+    #controls {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    #controls .hint {
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* ============================================================
+       SEKCJA WYJAŚNIEŃ (log konceptów)
+       ============================================================ */
+    #concept-log {
+      width: 100%;
+      max-width: 900px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 10px;
+      font-size: 0.75rem;
+    }
+
+    #concept-log h3 {
+      color: var(--muted);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    #concept-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .concept-entry {
+      color: var(--purple);
+      border-left: 2px solid var(--border);
+      padding-left: 8px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .concept-entry .kw { color: var(--cyan); }
+    .concept-entry .val { color: var(--green); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ============================================================
+       MOBILNE PRZYCISKI KIERUNKOWE
+       ============================================================ */
+    #mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media (pointer: coarse) {
+      #mobile-controls { display: flex; }
+    }
+
+    .dpad-btn {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 1.2rem;
+      padding: 14px 22px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .dpad-btn:active { background: var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">{ <span>CODE</span>_RUNNER }</div>
+  <div class="tagline">// platforma do nauki programowania</div>
+</header>
+
+<div id="hud">
+  <div class="hud-item" id="hud-score">
+    <span class="hud-label">// score</span>
+    <span class="hud-value" id="val-score">0</span>
+  </div>
+  <div class="hud-item" id="hud-lives">
+    <span class="hud-label">// lives</span>
+    <span class="hud-value" id="val-lives">❤ ❤ ❤</span>
+  </div>
+  <div class="hud-item" id="hud-combo">
+    <span class="hud-label">// combo</span>
+    <span class="hud-value" id="val-combo">x1</span>
+  </div>
+  <div class="hud-item" id="hud-level">
+    <span class="hud-label">// level</span>
+    <span class="hud-value" id="val-level">1</span>
+  </div>
+  <div class="hud-item" id="hud-concept">
+    <span class="hud-label">// last concept</span>
+    <span class="hud-value" id="val-concept">—</span>
+  </div>
+  <div id="progress-bar-wrap">
+    <span class="hud-label">// next level</span>
+    <div id="progress-bar-bg"><div id="progress-bar-fill"></div></div>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="gameCanvas" width="900" height="500"></canvas>
+
+  <div class="overlay" id="screen-start">
+    <h2>{ CODE_RUNNER }</h2>
+    <p>Zbieraj <span style="color:var(--cyan)">tokeny kodu</span> i unikaj <span style="color:var(--red)">bugów</span>.<br>
+    Każdy token to pojęcie z programowania — kliknij go, żeby się czegoś nauczyć!<br><br>
+    <kbd style="color:var(--orange)">← →</kbd> ruch &nbsp;|&nbsp;
+    <kbd style="color:var(--orange)">↑ / Spacja</kbd> skok &nbsp;|&nbsp;
+    <kbd style="color:var(--orange)">P</kbd> pauza</p>
+    <button class="btn green" id="btn-start">▶ START</button>
+  </div>
+
+  <div class="overlay hidden" id="screen-pause">
+    <h2>// PAUZA</h2>
+    <p>Naciśnij <kbd style="color:var(--cyan)">P</kbd> lub kliknij przycisk, aby kontynuować.</p>
+    <button class="btn" id="btn-resume">▶ WZNÓW</button>
+  </div>
+
+  <div class="overlay hidden" id="screen-gameover">
+    <h2>// GAME OVER</h2>
+    <div class="score-big" id="final-score">0 pkt</div>
+    <p id="final-msg">Zdobyłeś koncepty:<br><span id="final-concepts" style="color:var(--purple)"></span></p>
+    <button class="btn green" id="btn-restart">↺ ZAGRAJ PONOWNIE</button>
+  </div>
+</div>
+
+<div id="controls">
+  <button class="btn" id="btn-pause">⏸ PAUZA</button>
+  <span class="hint">← → skoki, ↑ / Spacja = skok, P = pauza</span>
+</div>
+
+<div id="mobile-controls">
+  <button class="dpad-btn" id="m-left">◀</button>
+  <button class="dpad-btn" id="m-jump">▲ SKOK</button>
+  <button class="dpad-btn" id="m-right">▶</button>
+</div>
+
+<div id="concept-log">
+  <h3>// zebrane koncepty programistyczne</h3>
+  <div id="concept-entries">
+    <div class="concept-entry" style="color:var(--muted)">— czekam na pierwszą odpowiedź…</div>
+  </div>
+</div>
