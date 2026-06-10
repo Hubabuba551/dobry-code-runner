@@ -183,4 +183,276 @@
       color: var(--green);
     }
 
-    /* =
+    .btn {
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none;
+      border-radius: 4px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px var(--cyan);
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    /* ============================================================
+       RESPONSYWNOŚĆ
+       ============================================================ */
+    @media (max-width: 600px) {
+      header { gap: 8px; }
+      .logo { font-size: 1.2rem; }
+      #hud { gap: 12px; font-size: 0.7rem; }
+      .overlay h2 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAGŁÓWEK -->
+  <header>
+    <div class="logo">CODE<span>RUN</span></div>
+    <div class="tagline">Nauka Programowania w Akcji</div>
+  </header>
+
+  <!-- HUD - INTERFEJS UŻYTKOWNIKA -->
+  <div id="hud">
+    <div id="hud-score" class="hud-item">
+      <span class="hud-label">Punkty</span>
+      <span class="hud-value">0</span>
+    </div>
+    <div id="hud-lives" class="hud-item">
+      <span class="hud-label">Życia</span>
+      <span class="hud-value">3</span>
+    </div>
+    <div id="hud-level" class="hud-item">
+      <span class="hud-label">Poziom</span>
+      <span class="hud-value">1</span>
+    </div>
+    <div id="hud-concept" class="hud-item">
+      <span class="hud-label">Koncept</span>
+      <span class="hud-value">Zmienne</span>
+    </div>
+    <div id="hud-combo" class="hud-item">
+      <span class="hud-label">Combo</span>
+      <span class="hud-value">0x</span>
+    </div>
+    <div id="progress-bar-wrap">
+      <span class="hud-label">Postęp</span>
+      <div id="progress-bar-bg">
+        <div id="progress-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS GRY -->
+  <div id="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <!-- EKRAN STARTU -->
+    <div id="startOverlay" class="overlay">
+      <h2>CODE RUNNER</h2>
+      <p>Złap koncepty programowania i zdobądź punkty!</p>
+      <button class="btn" onclick="startGame()">Graj</button>
+    </div>
+    <!-- EKRAN PAUZY -->
+    <div id="pauseOverlay" class="overlay hidden">
+      <h2>PAUZA</h2>
+      <p>Gra wznowiona automatycznie...</p>
+    </div>
+    <!-- EKRAN KOŃCA GRY -->
+    <div id="gameOverOverlay" class="overlay hidden">
+      <h2>KONIEC GRY</h2>
+      <div class="score-big" id="finalScore">0</div>
+      <p id="gameOverMsg"></p>
+      <button class="btn" onclick="location.reload()">Spróbuj Ponownie</button>
+    </div>
+  </div>
+
+  <script>
+    // Konfiguracja
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Ustawienie rozmiaru canvas
+    function resizeCanvas() {
+      const maxWidth = 900;
+      const container = document.getElementById('canvas-wrap');
+      const availableWidth = Math.min(window.innerWidth - 32, maxWidth);
+      canvas.width = availableWidth;
+      canvas.height = availableWidth * 9 / 16; // Aspect ratio 16:9
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Stan gry
+    let gameState = {
+      score: 0,
+      lives: 3,
+      level: 1,
+      combo: 0,
+      gameRunning: false,
+      concepts: ['Zmienne', 'Pętle', 'Funkcje', 'Tablice', 'Warunki'],
+      currentConcept: 0
+    };
+
+    // Gracze i obiekty
+    let player = {
+      x: canvas.width / 2,
+      y: canvas.height - 40,
+      width: 30,
+      height: 30,
+      speed: 6
+    };
+
+    let collectibles = [];
+    let enemies = [];
+
+    // Funkcje do uaktualniania HUD
+    function updateHUD() {
+      document.querySelector('#hud-score .hud-value').textContent = gameState.score;
+      document.querySelector('#hud-lives .hud-value').textContent = gameState.lives;
+      document.querySelector('#hud-level .hud-value').textContent = gameState.level;
+      document.querySelector('#hud-combo .hud-value').textContent = gameState.combo + 'x';
+      document.querySelector('#hud-concept .hud-value').textContent = gameState.concepts[gameState.currentConcept];
+      
+      const progressPercent = (gameState.score % 100) / 100 * 100;
+      document.getElementById('progress-bar-fill').style.width = progressPercent + '%';
+    }
+
+    // Rysowanie gracza
+    function drawPlayer() {
+      ctx.fillStyle = '#00d4ff';
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.fillRect(player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+      ctx.shadowBlur = 0;
+    }
+
+    // Rysowanie zbieralek
+    function drawCollectibles() {
+      collectibles.forEach(item => {
+        ctx.fillStyle = '#2ed573';
+        ctx.shadowColor = '#2ed573';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    // Spawn zbieralek
+    function spawnCollectible() {
+      collectibles.push({
+        x: Math.random() * (canvas.width - 40) + 20,
+        y: -10,
+        speed: 2 + gameState.level * 0.5
+      });
+    }
+
+    // Pętla gry
+    function gameLoop() {
+      // Czyszczenie ekranu
+      ctx.fillStyle = '#0f0f1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (gameState.gameRunning) {
+        // Sterowanie
+        if (keys.left && player.x > player.width) player.x -= player.speed;
+        if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+
+        // Spawn nowych zbieralek
+        if (Math.random() < 0.02) spawnCollectible();
+
+        // Aktualizacja zbieralek
+        collectibles = collectibles.filter(item => {
+          item.y += item.speed;
+          return item.y < canvas.height;
+        });
+
+        // Kolizje
+        collectibles = collectibles.filter(item => {
+          if (Math.hypot(item.x - player.x, item.y - player.y) < 20) {
+            gameState.score += 10;
+            gameState.combo++;
+            updateHUD();
+            return false;
+          }
+          return true;
+        });
+
+        // Utrata życia
+        if (collectibles.some(item => item.y > canvas.height - 30)) {
+          gameState.lives--;
+          updateHUD();
+          if (gameState.lives <= 0) endGame();
+          collectibles = [];
+        }
+
+        // Poziom zaawansowany
+        if (gameState.score > 0 && gameState.score % 100 === 0) {
+          gameState.level++;
+          gameState.currentConcept = (gameState.currentConcept + 1) % gameState.concepts.length;
+          updateHUD();
+        }
+      }
+
+      // Rysowanie
+      drawPlayer();
+      drawCollectibles();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Klawiatura
+    const keys = { left: false, right: false };
+    window.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') keys.left = true;
+      if (e.key === 'ArrowRight') keys.right = true;
+    });
+    window.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft') keys.left = false;
+      if (e.key === 'ArrowRight') keys.right = false;
+    });
+
+    // Mysz (mobile)
+    document.addEventListener('mousemove', e => {
+      if (!gameState.gameRunning) return;
+      const rect = canvas.getBoundingClientRect();
+      player.x = e.clientX - rect.left;
+    });
+
+    // Start gry
+    function startGame() {
+      document.getElementById('startOverlay').classList.add('hidden');
+      gameState.gameRunning = true;
+      gameState.score = 0;
+      gameState.lives = 3;
+      gameState.level = 1;
+      gameState.combo = 0;
+      collectibles = [];
+      updateHUD();
+    }
+
+    // Koniec gry
+    function endGame() {
+      gameState.gameRunning = false;
+      document.getElementById('finalScore').textContent = gameState.score;
+      document.getElementById('gameOverMsg').textContent = 
+        gameState.score > 500 ? '🎉 Świetnie!' : gameState.score > 200 ? 'Nieźle!' : 'Próbuj dalej!';
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+    }
+
+    // Start pętli gry
+    updateHUD();
+    gameLoop();
+  </script>
+</body>
+</html>
