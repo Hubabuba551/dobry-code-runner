@@ -712,24 +712,29 @@
     }
 
     function startGame() {
-      document.getElementById('startOverlay').classList.add('hidden');
-      gameState.gameRunning = true;
-      gameState.score = 0;
-      gameState.lives = 3;
-      gameState.level = 1;
-      gameState.combo = 0;
-      gameState.maxCombo = 0;
-      gameState.totalCollected = 0;
-      
-      player.x = 100;
-      player.y = 300;
-      player.velocityX = 0;
-      player.velocityY = 0;
-      
-      createLevel(1);
-      generateCollectibles();
-      generateEnemies();
-      updateHUD();
+      try {
+        document.getElementById('startOverlay').classList.add('hidden');
+        gameState.gameRunning = true;
+        gameState.score = 0;
+        gameState.lives = 3;
+        gameState.level = 1;
+        gameState.combo = 0;
+        gameState.maxCombo = 0;
+        gameState.totalCollected = 0;
+        
+        player.x = 100;
+        player.y = 300;
+        player.velocityX = 0;
+        player.velocityY = 0;
+        
+        createLevel(1);
+        generateCollectibles();
+        generateEnemies();
+        updateHUD();
+        console.log('Game started successfully!');
+      } catch(e) {
+        console.error('Error starting game:', e);
+      }
     }
 
     function nextLevel() {
