@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Runner – Nauka Programowania</title>
+  <title>Code Runner – Platformówka Edukacyjna</title>
   <style>
     /* ============================================================
        RESET & ZMIENNE CSS
@@ -36,9 +36,6 @@
       user-select: none;
     }
 
-    /* ============================================================
-       NAGŁÓWEK
-       ============================================================ */
     header {
       width: 100%;
       max-width: 1000px;
@@ -62,9 +59,6 @@
       color: var(--muted);
     }
 
-    /* ============================================================
-       HUD – INTERFEJS UŻYTKOWNIKA
-       ============================================================ */
     #hud {
       width: 100%;
       max-width: 1000px;
@@ -100,13 +94,9 @@
     #hud-score   .hud-value { color: var(--cyan); }
     #hud-lives   .hud-value { color: var(--red); }
     #hud-level   .hud-value { color: var(--green); }
-    #hud-concept .hud-value { color: var(--purple); font-size: 0.9rem; }
+    #hud-collected .hud-value { color: var(--purple); }
     #hud-combo   .hud-value { color: var(--orange); }
-    #hud-accuracy .hud-value { color: #ffd700; }
 
-    /* ============================================================
-       CANVAS – SCENA GRY
-       ============================================================ */
     #canvas-wrap {
       position: relative;
       width: 100%;
@@ -121,12 +111,9 @@
       background: var(--bg);
       border: 2px solid var(--border);
       border-radius: 6px;
-      cursor: crosshair;
+      cursor: default;
     }
 
-    /* ============================================================
-       EKRANY NAKŁADKOWE
-       ============================================================ */
     .overlay {
       position: absolute;
       inset: 0;
@@ -193,11 +180,6 @@
       font-weight: bold;
     }
 
-    .btn-group {
-      display: flex;
-      gap: 12px;
-    }
-
     .btn {
       padding: 12px 28px;
       font-size: 0.9rem;
@@ -219,51 +201,19 @@
 
     .btn:active { transform: scale(0.95); }
 
-    .btn-secondary {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .btn-secondary:hover {
-      background: var(--border);
-    }
-
-    /* Floating text dla feedback */
-    .floating-text {
-      position: absolute;
-      pointer-events: none;
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-
-    /* ============================================================
-       RESPONSYWNOŚĆ
-       ============================================================ */
     @media (max-width: 768px) {
       header { gap: 8px; }
       .logo { font-size: 1.2rem; }
       #hud { grid-template-columns: repeat(3, 1fr); font-size: 0.7rem; }
-      .overlay h2 { font-size: 1.6rem; }
-      .overlay .score-big { font-size: 2.2rem; }
-      .btn { padding: 10px 20px; font-size: 0.8rem; }
-    }
-
-    @media (max-width: 480px) {
-      #hud { grid-template-columns: repeat(2, 1fr); }
-      .overlay { gap: 12px; }
-      .overlay p { font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
-  <!-- NAGŁÓWEK -->
   <header>
     <div class="logo">CODE<span>RUN</span></div>
-    <div class="tagline">🎮 Nauka Programowania w Akcji</div>
+    <div class="tagline">🎮 Platformówka Edukacyjna</div>
   </header>
 
-  <!-- HUD - INTERFEJS UŻYTKOWNIKA -->
   <div id="hud">
     <div id="hud-score" class="hud-item">
       <span class="hud-label">Punkty</span>
@@ -277,52 +227,37 @@
       <span class="hud-label">Poziom</span>
       <span class="hud-value">1</span>
     </div>
-    <div id="hud-concept" class="hud-item">
-      <span class="hud-label">Koncepty</span>
-      <span class="hud-value">-</span>
+    <div id="hud-collected" class="hud-item">
+      <span class="hud-label">Zebrane</span>
+      <span class="hud-value">0/0</span>
     </div>
     <div id="hud-combo" class="hud-item">
       <span class="hud-label">Combo</span>
       <span class="hud-value">0x</span>
     </div>
-    <div id="hud-accuracy" class="hud-item">
-      <span class="hud-label">Celność</span>
-      <span class="hud-value">--%</span>
-    </div>
   </div>
 
-  <!-- CANVAS GRY -->
   <div id="canvas-wrap">
     <canvas id="gameCanvas"></canvas>
 
-    <!-- EKRAN STARTU -->
     <div id="startOverlay" class="overlay">
       <h2>⚡ CODE RUNNER ⚡</h2>
-      <p>Gracz steruje postacią i łapie spadające elementy kodu.<br>
-         Zielone obiekty = Poprawne koncepty (+10 pkt)<br>
-         Czerwone obiekty = Błędy (-1 życie)<br>
-         Niebieskie obiekty = Bonusy (+50 pkt)</p>
+      <p>Platformówka nauki programowania!<br>
+         Skacz po platformach i zbieraj koncepty kodu.<br>
+         Unikaj wrogów (czerwone kwadraty) i docierz do WYJŚCIA!</p>
       <div class="overlay-stats">
         <div class="stat-box">
-          <div class="stat-box-label">Sterowanie</div>
-          <div class="stat-box-value">⬅️ ➡️</div>
+          <div class="stat-box-label">Lewo/Prawo</div>
+          <div class="stat-box-value">A/D lub ⬅️ ➡️</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Lub mysz</div>
-          <div class="stat-box-value">🖱️</div>
+          <div class="stat-box-label">Skok</div>
+          <div class="stat-box-value">SPACJA</div>
         </div>
       </div>
       <button class="btn" onclick="startGame()">🎮 GRAJ</button>
     </div>
 
-    <!-- EKRAN PAUZY -->
-    <div id="pauseOverlay" class="overlay hidden">
-      <h2>⏸️ PAUZA</h2>
-      <p>Naciśnij SPACJĘ aby wznowić grę</p>
-      <button class="btn-secondary btn" onclick="resumeGame()">Wznów</button>
-    </div>
-
-    <!-- EKRAN KOŃCA GRY -->
     <div id="gameOverOverlay" class="overlay hidden">
       <h2>🏁 KONIEC GRY</h2>
       <div class="score-big" id="finalScore">0</div>
@@ -333,25 +268,31 @@
           <div class="stat-box-value" id="finalLevel">1</div>
         </div>
         <div class="stat-box">
-          <div class="stat-box-label">Max Combo</div>
-          <div class="stat-box-value" id="finalCombo">0x</div>
+          <div class="stat-box-label">Zebrane</div>
+          <div class="stat-box-value" id="finalCollected">0</div>
         </div>
       </div>
-      <div class="btn-group">
-        <button class="btn" onclick="location.reload()">🔄 Graj Ponownie</button>
-      </div>
+      <button class="btn" onclick="location.reload()">🔄 Graj Ponownie</button>
     </div>
   </div>
 
   <script>
-    /* ============================================================
-       KONFIGURACJA I ZMIENNE GLOBALNE
-       ============================================================ */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let animationId;
+    
+    const GRAVITY = 0.6;
+    const JUMP_STRENGTH = -15;
+    
+    const CONCEPTS = [
+      { name: 'let', type: 'correct', color: '#2ed573', value: 10 },
+      { name: 'const', type: 'correct', color: '#2ed573', value: 10 },
+      { name: 'for', type: 'correct', color: '#2ed573', value: 10 },
+      { name: 'function', type: 'correct', color: '#2ed573', value: 10 },
+      { name: '==', type: 'mistake', color: '#ff4757', value: 0 },
+      { name: 'eval()', type: 'mistake', color: '#ff4757', value: 0 }
+    ];
 
-    // Ustawienie rozmiaru canvas
     function setupCanvas() {
       const container = document.getElementById('canvas-wrap');
       canvas.width = container.clientWidth;
@@ -360,25 +301,6 @@
     setupCanvas();
     window.addEventListener('resize', setupCanvas);
 
-    /* ============================================================
-       DEFINICJE OBIEKTÓW - KONCEPTY DO ZBIERANIA
-       ============================================================ */
-    const CONCEPTS = [
-      { name: 'let', type: 'correct', color: '#2ed573', value: 10 },
-      { name: 'const', type: 'correct', color: '#2ed573', value: 10 },
-      { name: 'var', type: 'correct', color: '#2ed573', value: 10 },
-      { name: 'for', type: 'correct', color: '#2ed573', value: 10 },
-      { name: 'while', type: 'correct', color: '#2ed573', value: 10 },
-      { name: 'function', type: 'correct', color: '#2ed573', value: 10 },
-      { name: '==', type: 'mistake', color: '#ff4757', value: -1 },
-      { name: 'goto', type: 'mistake', color: '#ff4757', value: -1 },
-      { name: 'eval()', type: 'mistake', color: '#ff4757', value: -1 },
-      { name: 'BONUS!', type: 'bonus', color: '#00d4ff', value: 50 }
-    ];
-
-    /* ============================================================
-       STAN GRY
-       ============================================================ */
     const gameState = {
       score: 0,
       lives: 3,
@@ -386,75 +308,176 @@
       combo: 0,
       maxCombo: 0,
       gameRunning: false,
-      gamePaused: false,
       totalCollected: 0,
-      totalMissed: 0,
-      floatingTexts: []
+      totalOnLevel: 0,
+      floatingTexts: [],
+      cameraX: 0,
+      cameraY: 0
     };
 
-    /* ============================================================
-       GRACZ - GŁÓWNA POSTAĆ
-       ============================================================ */
     const player = {
-      x: canvas.width / 2,
-      y: canvas.height - 50,
-      width: 40,
-      height: 40,
-      speed: 8,
+      x: 100,
+      y: 300,
+      width: 24,
+      height: 32,
+      velocityX: 0,
+      velocityY: 0,
+      speed: 5,
+      isJumping: false,
+      direction: 1,
       
-      // Metoda rysowania gracza
+      update: function() {
+        this.velocityY += GRAVITY;
+        this.velocityY = Math.min(this.velocityY, 15);
+        
+        if (keys.left) {
+          this.velocityX = -this.speed;
+          this.direction = -1;
+        } else if (keys.right) {
+          this.velocityX = this.speed;
+          this.direction = 1;
+        } else {
+          this.velocityX *= 0.85;
+        }
+        
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        
+        if (this.x < 0) this.x = 0;
+        if (this.x + this.width > 2000) this.x = 2000 - this.width;
+        
+        gameState.cameraX = this.x - canvas.width / 3;
+        gameState.cameraY = this.y - canvas.height / 3;
+        gameState.cameraX = Math.max(0, gameState.cameraX);
+        gameState.cameraY = Math.max(0, gameState.cameraY);
+      },
+      
       draw: function() {
         ctx.save();
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
+        
         ctx.fillStyle = '#00d4ff';
         ctx.shadowColor = '#00d4ff';
         ctx.shadowBlur = 15;
-        ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
-        ctx.strokeStyle = '#00d4ff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        
+        ctx.fillStyle = '#000';
+        const eyeY = this.y + 8;
+        ctx.fillRect(this.x + 6 + this.direction * 2, eyeY, 3, 3);
+        ctx.fillRect(this.x + 13 + this.direction * 2, eyeY, 3, 3);
+        
         ctx.restore();
       },
       
-      // Metoda ruchu gracza
-      moveLeft: function() {
-        if (this.x > this.width / 2) this.x -= this.speed;
+      jump: function() {
+        if (!this.isJumping) {
+          this.velocityY = JUMP_STRENGTH;
+          this.isJumping = true;
+        }
       },
       
-      moveRight: function() {
-        if (this.x < canvas.width - this.width / 2) this.x += this.speed;
-      },
-      
-      // Sprawdzenie kolizji z obiektem
       collidesWith: function(obj) {
-        return Math.hypot(obj.x - this.x, obj.y - this.y) < this.width / 2 + obj.size;
+        return this.x < obj.x + obj.width &&
+               this.x + this.width > obj.x &&
+               this.y < obj.y + obj.height &&
+               this.y + this.height > obj.y;
       }
     };
 
-    /* ============================================================
-       OBIEKTY SPADAJĄCE - KONCEPTY
-       ============================================================ */
-    let fallingObjects = [];
+    let platforms = [];
 
-    class FallingObject {
+    class Platform {
+      constructor(x, y, width, height = 20) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.type = 'normal';
+        this.moveDir = 1;
+        this.moveSpeed = 2;
+      }
+      
+      update() {
+        if (this.type === 'moving') {
+          this.x += this.moveSpeed * this.moveDir;
+          if (this.x < 0 || this.x + this.width > 2000) {
+            this.moveDir *= -1;
+          }
+        }
+      }
+      
+      draw() {
+        ctx.save();
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
+        
+        if (this.type === 'moving') {
+          ctx.fillStyle = '#a29bfe';
+        } else if (this.type === 'bounce') {
+          ctx.fillStyle = '#ffa502';
+        } else {
+          ctx.fillStyle = '#2a2a4a';
+        }
+        
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 10;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        
+        ctx.restore();
+      }
+    }
+
+    function createLevel(levelNum) {
+      platforms = [];
+      platforms.push(new Platform(50, 400, 150));
+      
+      if (levelNum === 1) {
+        platforms.push(new Platform(250, 350, 100));
+        platforms.push(new Platform(400, 300, 100));
+        platforms.push(new Platform(550, 250, 100));
+        platforms.push(new Platform(700, 200, 100));
+        platforms.push(new Platform(800, 150, 150));
+        
+        let movingPlat = new Platform(300, 450, 80);
+        movingPlat.type = 'moving';
+        platforms.push(movingPlat);
+        
+      } else if (levelNum === 2) {
+        platforms.push(new Platform(200, 380, 80));
+        platforms.push(new Platform(350, 340, 100));
+        platforms.push(new Platform(500, 300, 80));
+        
+        let bouncePlat = new Platform(650, 260, 100);
+        bouncePlat.type = 'bounce';
+        platforms.push(bouncePlat);
+        
+        platforms.push(new Platform(800, 200, 120));
+        platforms.push(new Platform(950, 150, 150));
+      } else {
+        for (let i = 0; i < 8; i++) {
+          platforms.push(new Platform(150 + i * 150, 400 - i * 50, 100));
+        }
+        platforms.push(new Platform(1350, 50, 150));
+      }
+    }
+
+    let collectibles = [];
+
+    class Collectible {
       constructor(x, y, concept) {
         this.x = x;
         this.y = y;
         this.concept = concept;
-        this.size = 12;
-        this.speed = 2 + gameState.level * 0.3;
+        this.size = 10;
         this.rotation = 0;
-        this.rotationSpeed = Math.random() * 0.1;
       }
       
-      // Aktualizacja pozycji obiektu
       update() {
-        this.y += this.speed;
-        this.rotation += this.rotationSpeed;
+        this.rotation += 0.05;
       }
       
-      // Rysowanie obiektu
       draw() {
         ctx.save();
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         
@@ -466,50 +489,111 @@
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
         ctx.fill();
         
-        // Tekst wewnątrz obiektu
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 9px monospace';
+        ctx.font = 'bold 7px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(this.concept.name.substring(0, 3), 0, 0);
+        ctx.fillText(this.concept.name.substring(0, 2), 0, 0);
+        
+        ctx.restore();
+      }
+    }
+
+    function generateCollectibles() {
+      collectibles = [];
+      gameState.totalOnLevel = 0;
+      
+      for (let i = 1; i < platforms.length; i++) {
+        const platform = platforms[i];
+        if (Math.random() > 0.3) {
+          const concept = CONCEPTS[Math.floor(Math.random() * CONCEPTS.length)];
+          const x = platform.x + Math.random() * (platform.width - 20) + 10;
+          const y = platform.y - 30;
+          collectibles.push(new Collectible(x, y, concept));
+          gameState.totalOnLevel++;
+        }
+      }
+    }
+
+    let enemies = [];
+
+    class Enemy {
+      constructor(x, y, platformIndex) {
+        this.x = x;
+        this.y = y;
+        this.width = 20;
+        this.height = 20;
+        this.speed = 2;
+        this.direction = 1;
+        this.platform = platforms[platformIndex];
+      }
+      
+      update() {
+        this.x += this.speed * this.direction;
+        
+        if (this.x < this.platform.x || 
+            this.x + this.width > this.platform.x + this.platform.width) {
+          this.direction *= -1;
+        }
+      }
+      
+      draw() {
+        ctx.save();
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
+        
+        ctx.fillStyle = '#ff4757';
+        ctx.shadowColor = '#ff4757';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        
+        ctx.fillStyle = '#000';
+        ctx.fillRect(this.x + 3, this.y + 4, 4, 4);
+        ctx.fillRect(this.x + 13, this.y + 4, 4, 4);
         
         ctx.restore();
       }
       
-      // Sprawdzenie czy obiekt zszedł poza ekran
-      isOutOfBounds() {
-        return this.y > canvas.height + 20;
+      collidesWith: function(player) {
+        return player.x < this.x + this.width &&
+               player.x + player.width > this.x &&
+               player.y < this.y + this.height &&
+               player.y + player.height > this.y;
       }
     }
 
-    /* ============================================================
-       PŁYWAJĄCY TEKST - FEEDBACK
-       ============================================================ */
+    function generateEnemies() {
+      enemies = [];
+      if (gameState.level >= 2 && platforms.length > 4) {
+        enemies.push(new Enemy(platforms[3].x + 20, platforms[3].y - 20, 3));
+        enemies.push(new Enemy(platforms[4].x + 20, platforms[4].y - 20, 4));
+      }
+      if (gameState.level >= 3 && platforms.length > 3) {
+        enemies.push(new Enemy(platforms[2].x + 20, platforms[2].y - 20, 2));
+      }
+    }
+
     class FloatingText {
-      constructor(x, y, text, color, duration = 1500) {
+      constructor(x, y, text, color) {
         this.x = x;
         this.y = y;
         this.text = text;
         this.color = color;
-        this.duration = duration;
         this.startTime = Date.now();
         this.velocity = -2;
       }
       
-      // Aktualizacja pozycji tekstu
       update() {
         this.y += this.velocity;
-        return Date.now() - this.startTime < this.duration;
+        return Date.now() - this.startTime < 1500;
       }
       
-      // Rysowanie tekstu
       draw() {
         const elapsed = Date.now() - this.startTime;
-        const progress = elapsed / this.duration;
-        const opacity = 1 - progress;
+        const opacity = 1 - (elapsed / 1500);
         
         ctx.save();
         ctx.globalAlpha = opacity;
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
         ctx.fillStyle = this.color;
         ctx.font = 'bold 16px monospace';
         ctx.textAlign = 'center';
@@ -518,86 +602,73 @@
       }
     }
 
-    /* ============================================================
-       INTERFEJS UŻYTKOWNIKA - HUD
-       ============================================================ */
-    
-    /**
-     * Aktualizuje wyświetlane wartości HUD
-     * - Punkty, życia, poziom, combo
-     * - Pasek postępu
-     * Wywoływana: po zmianach stanu gry
-     * Parametry: brak
-     * Zwraca: nic
-     */
-    function updateHUD() {
-      document.querySelector('#hud-score .hud-value').textContent = gameState.score;
-      document.querySelector('#hud-lives .hud-value').textContent = `❤️ ${gameState.lives}`;
-      document.querySelector('#hud-level .hud-value').textContent = gameState.level;
-      document.querySelector('#hud-combo .hud-value').textContent = gameState.combo + 'x';
-      
-      const accuracy = gameState.totalCollected + gameState.totalMissed > 0
-        ? Math.round((gameState.totalCollected / (gameState.totalCollected + gameState.totalMissed)) * 100)
-        : 0;
-      document.querySelector('#hud-accuracy .hud-value').textContent = accuracy + '%';
-    }
-
-    /**
-     * Dodaje pływający tekst na ekranie
-     * - Tworzy floating text i dodaje do tablicy
-     * Wywoływana: po zebraniu obiektu lub błędzie
-     * Parametry: x, y, text, color
-     * Zwraca: nic
-     */
     function addFloatingText(x, y, text, color) {
       gameState.floatingTexts.push(new FloatingText(x, y, text, color));
     }
 
-    /* ============================================================
-       MECHANIKA GRY - SPAWN I KOLIZJE
-       ============================================================ */
-    
-    /**
-     * Losuje i spawnia nowy spadający obiekt
-     * - Wybiera losowy koncept z CONCEPTS
-     * - Umieszcza go w losowej pozycji na górze ekranu
-     * Wywoławana: w pętli gameLoop z pewnym prawdopodobieństwem
-     * Parametry: brak
-     * Zwraca: nic
-     */
-    function spawnFallingObject() {
-      const randomConcept = CONCEPTS[Math.floor(Math.random() * CONCEPTS.length)];
-      const x = Math.random() * (canvas.width - 40) + 20;
-      fallingObjects.push(new FallingObject(x, -20, randomConcept));
+    function updateHUD() {
+      document.querySelector('#hud-score .hud-value').textContent = gameState.score;
+      document.querySelector('#hud-lives .hud-value').textContent = `❤️ ${gameState.lives}`;
+      document.querySelector('#hud-level .hud-value').textContent = gameState.level;
+      document.querySelector('#hud-collected .hud-value').textContent = 
+        gameState.totalCollected + '/' + gameState.totalOnLevel;
+      document.querySelector('#hud-combo .hud-value').textContent = gameState.combo + 'x';
     }
 
-    /**
-     * Sprawdza czy gracz zebrał lub przegapił obiekt
-     * - Kolizje z graczem - dodanie punktów
-     * - Obiekty które upadły - utrata życia
-     * Wywoławana: w pętli gameLoop
-     * Parametry: brak
-     * Zwraca: nic
-     */
-    function checkCollisions() {
-      fallingObjects = fallingObjects.filter(obj => {
-        // Kolizja z graczem
-        if (player.collidesWith(obj)) {
-          if (obj.concept.type === 'correct') {
-            gameState.score += obj.concept.value;
-            gameState.combo++;
-            gameState.totalCollected++;
-            addFloatingText(obj.x, obj.y, '+' + obj.concept.value, '#2ed573');
-          } else if (obj.concept.type === 'mistake') {
-            gameState.lives--;
+    const keys = { left: false, right: false, jump: false };
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        keys.left = true;
+        e.preventDefault();
+      }
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        keys.right = true;
+        e.preventDefault();
+      }
+      if (e.key === ' ') {
+        keys.jump = true;
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+      if (e.key === ' ') keys.jump = false;
+    });
+
+    function checkPlatformCollisions() {
+      player.isJumping = true;
+      
+      for (let platform of platforms) {
+        if (player.collidesWith(platform)) {
+          if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y) {
+            player.y = platform.y - player.height;
+            player.velocityY = 0;
+            player.isJumping = false;
+            
+            if (platform.type === 'bounce') {
+              player.velocityY = JUMP_STRENGTH * 1.5;
+              addFloatingText(player.x, player.y, '🚀', '#ffa502');
+            }
+          }
+        }
+      }
+    }
+
+    function checkCollectibles() {
+      collectibles = collectibles.filter(item => {
+        if (player.collidesWith({x: item.x - item.size, y: item.y - item.size, width: item.size * 2, height: item.size * 2})) {
+          gameState.score += item.concept.value;
+          gameState.combo++;
+          gameState.totalCollected++;
+          
+          if (item.concept.type === 'correct') {
+            addFloatingText(item.x, item.y, '+' + item.concept.value, '#2ed573');
+          } else {
+            addFloatingText(item.x, item.y, '💥 BŁĄD', '#ff4757');
             gameState.combo = 0;
-            gameState.totalMissed++;
-            addFloatingText(obj.x, obj.y, '❌ -1', '#ff4757');
-          } else if (obj.concept.type === 'bonus') {
-            gameState.score += obj.concept.value;
-            gameState.combo += 2;
-            gameState.totalCollected++;
-            addFloatingText(obj.x, obj.y, '★ +' + obj.concept.value, '#00d4ff');
           }
           
           if (gameState.combo > gameState.maxCombo) {
@@ -607,261 +678,162 @@
           updateHUD();
           return false;
         }
-        
-        // Obiekt upadł na dno
-        if (obj.isOutOfBounds()) {
-          if (obj.concept.type === 'correct') {
-            gameState.lives--;
-            gameState.combo = 0;
-            gameState.totalMissed++;
-            addFloatingText(obj.x, canvas.height - 50, '⚠️ Przegapiony!', '#ffa502');
-            updateHUD();
-          }
-          return false;
-        }
-        
         return true;
       });
     }
 
-    /**
-     * Sprawdza warunki zwycięstwa i przegrania
-     * - Jeśli lives <= 0 koniec gry
-     * - Jeśli score osiągnął threshold przejście do następnego poziomu
-     * Wywoławana: w pętli gameLoop
-     * Parametry: brak
-     * Zwraca: nic
-     */
-    function checkGameStatus() {
-      if (gameState.lives <= 0) {
-        endGame();
-      }
-      
-      // Przejście do następnego poziomu
-      if (gameState.score > 0 && gameState.score % 200 === 0) {
-        if (gameState.level < 10) {
-          gameState.level++;
+    function checkEnemyCollisions() {
+      for (let enemy of enemies) {
+        if (enemy.collidesWith(player)) {
+          gameState.lives--;
+          gameState.combo = 0;
+          player.x = 100;
+          player.y = 300;
+          player.velocityY = 0;
+          addFloatingText(player.x, player.y, '❌ Trafiony!', '#ff4757');
           updateHUD();
-          addFloatingText(canvas.width / 2, canvas.height / 2, '📈 LEVEL UP!', '#a29bfe');
+          
+          if (gameState.lives <= 0) {
+            endGame();
+          }
+          return;
         }
       }
     }
 
-    /* ============================================================
-       OBSŁUGA ZDARZEŃ
-       ============================================================ */
-    
-    const keys = { left: false, right: false };
-
-    /**
-     * Nasłuchuje wciśnięcia klawiszy
-     * - ArrowLeft / ArrowRight - sterowanie
-     * - Spacja - pauza
-     * Wywoławana: automatycznie przez event listener
-     * Parametry: event object
-     * Zwraca: nic
-     */
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') {
-        keys.left = true;
-        e.preventDefault();
+    function checkLevelExit() {
+      const exitPlatform = platforms[platforms.length - 1];
+      if (player.collidesWith(exitPlatform) && player.y + player.height <= exitPlatform.y + 10) {
+        nextLevel();
       }
-      if (e.key === 'ArrowRight') {
-        keys.right = true;
-        e.preventDefault();
-      }
-      if (e.key === ' ' && gameState.gameRunning) {
-        gameState.gamePaused = !gameState.gamePaused;
-        if (gameState.gamePaused) {
-          document.getElementById('pauseOverlay').classList.remove('hidden');
-        } else {
-          document.getElementById('pauseOverlay').classList.add('hidden');
-        }
-        e.preventDefault();
-      }
-    });
+    }
 
-    /**
-     * Nasłuchuje puszczenia klawiszy
-     * - Wyłącza flagę ruchu gracza
-     * Wywoławana: automatycznie przez event listener
-     * Parametry: event object
-     * Zwraca: nic
-     */
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowLeft') keys.left = false;
-      if (e.key === 'ArrowRight') keys.right = false;
-    });
-
-    /**
-     * Nasłuchuje ruchu myszy
-     * - Przesuwa gracza na pozycję myszy (X)
-     * Wywoławana: automatycznie przez event listener
-     * Parametry: event object z pozycją myszy
-     * Zwraca: nic
-     */
-    document.addEventListener('mousemove', (e) => {
-      if (!gameState.gameRunning || gameState.gamePaused) return;
-      const rect = canvas.getBoundingClientRect();
-      player.x = e.clientX - rect.left;
-      player.x = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, player.x));
-    });
-
-    /**
-     * Obsługuje ekran dotykowy (urządzenia mobilne)
-     * - Gracz śledzi dotyk
-     * Wywoławana: automatycznie przez event listener
-     * Parametry: event object z pozycją dotyku
-     * Zwraca: nic
-     */
-    document.addEventListener('touchmove', (e) => {
-      if (!gameState.gameRunning || gameState.gamePaused) return;
-      const rect = canvas.getBoundingClientRect();
-      player.x = e.touches[0].clientX - rect.left;
-      player.x = Math.max(player.width / 2, Math.min(canvas.width - player.width / 2, player.x));
-    });
-
-    /* ============================================================
-       LOGIKA ROZGRYWKI
-       ============================================================ */
-    
-    /**
-     * Starts the game
-     * - Resetuje stan gry
-     * - Ukrywa ekran startowy
-     * - Ustawia gameRunning na true
-     * Wywoławana: po kliknięciu przycisku "Graj"
-     * Parametry: brak
-     * Zwraca: nic
-     */
     function startGame() {
       document.getElementById('startOverlay').classList.add('hidden');
       gameState.gameRunning = true;
-      gameState.gamePaused = false;
       gameState.score = 0;
       gameState.lives = 3;
       gameState.level = 1;
       gameState.combo = 0;
       gameState.maxCombo = 0;
       gameState.totalCollected = 0;
-      gameState.totalMissed = 0;
-      fallingObjects = [];
-      gameState.floatingTexts = [];
+      
+      player.x = 100;
+      player.y = 300;
+      player.velocityX = 0;
+      player.velocityY = 0;
+      
+      createLevel(1);
+      generateCollectibles();
+      generateEnemies();
       updateHUD();
     }
 
-    /**
-     * Wznawia grę po pauzie
-     * - Ukrywa ekran pauzy
-     * - Ustawia gamePaused na false
-     * Wywoławana: po kliknięciu przycisku "Wznów" lub spacji
-     * Parametry: brak
-     * Zwraca: nic
-     */
-    function resumeGame() {
-      document.getElementById('pauseOverlay').classList.add('hidden');
-      gameState.gamePaused = false;
+    function nextLevel() {
+      gameState.level++;
+      gameState.totalCollected = 0;
+      addFloatingText(canvas.width / 2 + gameState.cameraX, canvas.height / 2 + gameState.cameraY, '📈 LEVEL ' + gameState.level, '#a29bfe');
+      
+      player.x = 100;
+      player.y = 300;
+      player.velocityX = 0;
+      player.velocityY = 0;
+      
+      createLevel(gameState.level);
+      generateCollectibles();
+      generateEnemies();
+      updateHUD();
     }
 
-    /**
-     * Kończy grę
-     * - Zatrzymuje mechanikę gry
-     * - Wyświetla wyniki
-     * - Pokazuje ekran końca gry
-     * Wywoławana: gdy lives <= 0
-     * Parametry: brak
-     * Zwraca: nic
-     */
     function endGame() {
       gameState.gameRunning = false;
       document.getElementById('finalScore').textContent = gameState.score;
       document.getElementById('finalLevel').textContent = gameState.level;
-      document.getElementById('finalCombo').textContent = gameState.maxCombo + 'x';
+      document.getElementById('finalCollected').textContent = gameState.totalCollected;
       
       let message = '';
-      if (gameState.score >= 1000) {
-        message = '🏆 MISTRZ PROGRAMOWANIA!';
-      } else if (gameState.score >= 500) {
-        message = '⭐ ŚWIETNY WYNIK!';
-      } else if (gameState.score >= 200) {
-        message = '👍 NIEŹLE SOBIE RADZIŁEŚ!';
-      } else if (gameState.score >= 50) {
-        message = '💪 MOŻESZ LEPIEJ!';
+      if (gameState.level >= 5) {
+        message = '🏆 MISTRZ PLATFORMÓWKI!';
+      } else if (gameState.level >= 3) {
+        message = '⭐ ŚWIETNA GRA!';
+      } else if (gameState.level >= 2) {
+        message = '👍 NIEŹLE!';
       } else {
-        message = '🎮 SPRÓBUJ PONOWNIE!';
+        message = '💪 SPRÓBUJ PONOWNIE!';
       }
       document.getElementById('gameOverMsg').textContent = message;
       document.getElementById('gameOverOverlay').classList.remove('hidden');
     }
 
-    /* ============================================================
-       PĘTLA GRY - GŁÓWNA FUNKCJA
-       ============================================================ */
-    
-    /**
-     * Główna pętla gry - wyrenderowuje jedną klatkę
-     * - Czyszcz ekran
-     * - Aktualizuje pozycje obiektów
-     * - Sprawdza kolizje i logikę gry
-     * - Rysuje wszystkie elementy
-     * - Rekurencyjnie wywołuje się samą siebie
-     * Wywoławana: rekurencyjnie za pomocą requestAnimationFrame
-     * Parametry: brak
-     * Zwraca: nic
-     */
     function gameLoop() {
-      // Czyszczenie ekranu
       ctx.fillStyle = '#0f0f1a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (gameState.gameRunning && !gameState.gamePaused) {
-        // Sterowanie postacią
-        if (keys.left) player.moveLeft();
-        if (keys.right) player.moveRight();
-
-        // Spawn nowych obiektów
-        if (Math.random() < 0.015 + gameState.level * 0.005) {
-          spawnFallingObject();
+      if (gameState.gameRunning) {
+        if (keys.jump) {
+          player.jump();
+          keys.jump = false;
         }
-
-        // Aktualizacja spadających obiektów
-        fallingObjects.forEach(obj => obj.update());
-
-        // Sprawdzenie kolizji
-        checkCollisions();
-
-        // Sprawdzenie stanu gry
-        checkGameStatus();
+        
+        player.update();
+        checkPlatformCollisions();
+        checkCollectibles();
+        
+        enemies.forEach(enemy => enemy.update());
+        checkEnemyCollisions();
+        
+        checkLevelExit();
+        
+        if (player.y > canvas.height + gameState.cameraY + 50) {
+          gameState.lives--;
+          gameState.combo = 0;
+          player.x = 100;
+          player.y = 300;
+          player.velocityY = 0;
+          addFloatingText(player.x, player.y, '💨 Upadłeś!', '#ff4757');
+          updateHUD();
+          
+          if (gameState.lives <= 0) {
+            endGame();
+          }
+        }
       }
 
-      // Rysowanie wszystkich elementów
-      fallingObjects.forEach(obj => obj.draw());
+      platforms.forEach(platform => {
+        platform.update();
+        platform.draw();
+      });
+
+      collectibles.forEach(item => {
+        item.update();
+        item.draw();
+      });
+
+      enemies.forEach(enemy => enemy.draw());
       player.draw();
 
-      // Rysowanie i aktualizacja pływającego tekstu
       gameState.floatingTexts = gameState.floatingTexts.filter(text => text.update());
       gameState.floatingTexts.forEach(text => text.draw());
 
-      // Rysowanie siatki w tle (opcjonalnie)
-      if (gameState.gameRunning) {
-        ctx.strokeStyle = 'rgba(42, 42, 74, 0.2)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i <= 10; i++) {
-          ctx.beginPath();
-          ctx.moveTo((canvas.width / 10) * i, 0);
-          ctx.lineTo((canvas.width / 10) * i, canvas.height);
-          ctx.stroke();
-        }
+      if (gameState.gameRunning && platforms.length > 0) {
+        const exitPlatform = platforms[platforms.length - 1];
+        ctx.save();
+        ctx.translate(-gameState.cameraX, -gameState.cameraY);
+        ctx.fillStyle = '#ffa502';
+        ctx.font = 'bold 20px monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#ffa502';
+        ctx.shadowBlur = 10;
+        ctx.fillText('EXIT ⬆️', exitPlatform.x + exitPlatform.width / 2, exitPlatform.y - 15);
+        ctx.restore();
       }
 
       animationId = requestAnimationFrame(gameLoop);
     }
 
-    // Inicjalizacja gry
     updateHUD();
     gameLoop();
 
-    // Czyszczenie przy zamknięciu
     window.addEventListener('beforeunload', () => {
       cancelAnimationFrame(animationId);
     });
